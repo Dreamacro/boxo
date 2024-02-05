@@ -138,7 +138,10 @@ func (sm *SessionManager) RemoveSession(sesid uint64) {
 	defer sm.sessLk.Unlock()
 
 	// Clean up session
-	if sm.sessions != nil { // check if SessionManager was shutdown
+	if sessions := sm.sessions; sessions != nil { // check if SessionManager was shutdown
+		if ses, ok := sessions[sesid]; ok {
+			ses.Shutdown()
+		}
 		delete(sm.sessions, sesid)
 	}
 }
