@@ -20,6 +20,7 @@ import (
 	dsq "github.com/ipfs/go-datastore/query"
 	ipld "github.com/ipfs/go-ipld-format"
 	mh "github.com/multiformats/go-multihash"
+	"golang.org/x/exp/mmap"
 )
 
 // FilestorePrefix identifies the key prefix for FileManager blocks.
@@ -175,7 +176,7 @@ func (f *FileManager) readFileDataObj(m mh.Multihash, d *pb.DataObj) ([]byte, er
 	p := filepath.FromSlash(d.GetFilePath())
 	abspath := filepath.Join(f.root, p)
 
-	fi, err := os.Open(abspath)
+	fi, err := mmap.Open(abspath)
 	if os.IsNotExist(err) {
 		return nil, &CorruptReferenceError{StatusFileNotFound, err}
 	} else if err != nil {
@@ -183,13 +184,8 @@ func (f *FileManager) readFileDataObj(m mh.Multihash, d *pb.DataObj) ([]byte, er
 	}
 	defer fi.Close()
 
-	_, err = fi.Seek(int64(d.GetOffset()), io.SeekStart)
-	if err != nil {
-		return nil, &CorruptReferenceError{StatusFileError, err}
-	}
-
 	outbuf := make([]byte, d.GetSize_())
-	_, err = io.ReadFull(fi, outbuf)
+	_, err = fi.ReadAt(outbuf, int64(d.GetOffset()))
 	if err == io.EOF || err == io.ErrUnexpectedEOF {
 		return nil, &CorruptReferenceError{StatusFileChanged, err}
 	} else if err != nil {
