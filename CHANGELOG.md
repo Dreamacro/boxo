@@ -16,6 +16,8 @@ The following emojis are used to highlight certain changes:
 
 ### Added
 
+- add `WithMMapReader` option to `FileManager`
+
 ### Changed
 
 ### Removed
