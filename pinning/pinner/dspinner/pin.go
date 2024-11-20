@@ -698,7 +698,7 @@ func (p *pinner) RecursiveKeys(ctx context.Context, detailed bool) <-chan ipfspi
 }
 
 func (p *pinner) streamIndex(ctx context.Context, index dsindex.Indexer, detailed bool) <-chan ipfspinner.StreamedPin {
-	out := make(chan ipfspinner.StreamedPin)
+	out := make(chan ipfspinner.StreamedPin, 1)
 
 	go func() {
 		defer close(out)
